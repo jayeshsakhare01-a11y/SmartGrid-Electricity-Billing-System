@@ -1,0 +1,1254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SmartGrid &bull; Electricity Billing &amp; Consumer Management</title>
+  <meta name="description" content="State Power &amp; Electricity Distribution - Consumer records, slab-based tariff computing, and invoice generation.">
+  <link rel="icon" type="image/png" href="images/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --surface-subtle: #f1f5f9;
+      --border: #e2e8f0;
+      --border-focus: #2563eb;
+      --brand-navy: #0f2d52;
+      --primary: #1d4ed8;
+      --primary-hover: #1e40af;
+      --primary-light: #eff6ff;
+      --text-main: #0f172a;
+      --text-secondary: #334155;
+      --text-muted: #64748b;
+      --success: #059669;
+      --success-light: #ecfdf5;
+      --danger: #dc2626;
+      --danger-light: #fef2f2;
+      --font-display: 'Poppins', -apple-system, sans-serif;
+      --font-body: 'Inter', -apple-system, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+      --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
+      --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.04);
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 14px;
+      --radius-pill: 9999px;
+      --transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--bg);
+      color: var(--text-main);
+      font-family: var(--font-body);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ================= HEADER & NAVIGATION ================= */
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      box-shadow: var(--shadow-xs);
+    }
+    .header-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 12px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .brand-wrap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .brand-logo-img {
+      width: 44px;
+      height: 44px;
+      object-fit: contain;
+      filter: drop-shadow(0 2px 4px rgba(15, 45, 82, 0.12));
+    }
+    .brand-text {
+      display: flex;
+      flex-direction: column;
+    }
+    .brand-title {
+      font-family: var(--font-display);
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--brand-navy);
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+    }
+    .brand-subtitle {
+      font-family: var(--font-body);
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .nav-tabs {
+      display: flex;
+      gap: 6px;
+      background: var(--surface-subtle);
+      padding: 4px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border);
+    }
+    .tab-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      font-family: var(--font-display);
+      font-size: 0.88rem;
+      font-weight: 500;
+      padding: 8px 20px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: var(--transition);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .tab-btn:hover {
+      color: var(--brand-navy);
+    }
+    .tab-btn.active {
+      background: var(--surface);
+      color: var(--primary);
+      font-weight: 600;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .header-date-badge {
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--surface-subtle);
+      border: 1px solid var(--border);
+      padding: 6px 14px;
+      border-radius: var(--radius-pill);
+    }
+    .btn-quick-bill {
+      background: var(--primary);
+      color: #ffffff;
+      border: none;
+      font-family: var(--font-display);
+      font-size: 0.82rem;
+      font-weight: 600;
+      padding: 7px 16px;
+      border-radius: var(--radius-pill);
+      cursor: pointer;
+      transition: var(--transition);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn-quick-bill:hover {
+      background: var(--primary-hover);
+      box-shadow: 0 2px 8px rgba(29, 78, 216, 0.25);
+    }
+
+    /* ================= PORTAL BANNER ================= */
+    .portal-banner {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 24px 32px;
+    }
+    .portal-banner-inner {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+    .portal-heading h1 {
+      font-family: var(--font-display);
+      font-size: 1.55rem;
+      font-weight: 700;
+      color: var(--brand-navy);
+      letter-spacing: -0.02em;
+      margin-bottom: 4px;
+    }
+    .portal-heading p {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+    }
+
+    .stat-group {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .stat-card {
+      background: var(--surface-subtle);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 12px 20px;
+      min-width: 140px;
+    }
+    .stat-card-label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: 2px;
+    }
+    .stat-card-val {
+      font-family: var(--font-display);
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--brand-navy);
+    }
+
+    /* ================= MAIN CONTENT ================= */
+    main {
+      flex: 1;
+      max-width: 1400px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 32px;
+    }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; animation: fadeIn 0.2s ease; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .grid-layout {
+      display: grid;
+      grid-template-columns: 440px 1fr;
+      gap: 28px;
+    }
+    @media (max-width: 1024px) {
+      .grid-layout { grid-template-columns: 1fr; }
+    }
+
+    /* ================= CARDS & FORMS ================= */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      box-shadow: var(--shadow-sm);
+    }
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border);
+    }
+    .card-title {
+      font-family: var(--font-display);
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--brand-navy);
+    }
+    .card-badge {
+      font-family: var(--font-body);
+      font-size: 0.75rem;
+      font-weight: 500;
+      padding: 4px 10px;
+      border-radius: var(--radius-pill);
+      background: var(--surface-subtle);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+    }
+
+    .form-group {
+      margin-bottom: 18px;
+    }
+    .form-label {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: 6px;
+    }
+    .form-control {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text-main);
+      font-family: var(--font-body);
+      font-size: 0.9rem;
+      padding: 10px 12px;
+      outline: none;
+      transition: var(--transition);
+    }
+    .form-control:focus {
+      border-color: var(--border-focus);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    }
+    .form-control[readonly] {
+      background: var(--surface-subtle);
+      color: var(--text-muted);
+      cursor: not-allowed;
+    }
+
+    .form-row-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 24px;
+    }
+    .btn {
+      flex: 1;
+      padding: 11px 16px;
+      border-radius: var(--radius-sm);
+      font-family: var(--font-display);
+      font-size: 0.88rem;
+      font-weight: 600;
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: var(--transition);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .btn-primary {
+      background: var(--primary);
+      color: #ffffff;
+      box-shadow: 0 2px 4px rgba(29, 78, 216, 0.2);
+    }
+    .btn-primary:hover {
+      background: var(--primary-hover);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 10px rgba(29, 78, 216, 0.3);
+    }
+    .btn-secondary {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text-main);
+    }
+    .btn-secondary:hover {
+      background: var(--surface-subtle);
+      border-color: #cbd5e1;
+    }
+    .btn-danger {
+      background: var(--danger-light);
+      border: 1px solid #fecaca;
+      color: var(--danger);
+    }
+    .btn-danger:hover {
+      background: var(--danger);
+      color: #ffffff;
+    }
+
+    /* ================= SEARCH & TABLE ================= */
+    .search-box {
+      position: relative;
+      margin-bottom: 16px;
+    }
+    .search-input {
+      padding-left: 36px;
+      border-radius: var(--radius-md);
+    }
+    .search-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      width: 16px;
+      height: 16px;
+    }
+
+    .table-scroll { max-height: 460px; overflow-y: auto; }
+    .table-scroll thead th { position: sticky; top: 0; z-index: 1; }
+    .filter-row { display: flex; gap: 10px; margin-bottom: 12px; }
+    .bill-summary { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 10px; }
+    .year-summary { margin-bottom: 14px; font-size: 0.85rem; }
+    .year-summary summary { cursor: pointer; font-weight: 600; color: var(--primary); margin-bottom: 8px; }
+    .track-table td, .track-table th { padding: 8px 10px; white-space: nowrap; text-align: right; }
+    .track-table td:first-child, .track-table th:first-child { text-align: left; position: sticky; left: 0; background: var(--surface); }
+    .track-table tbody tr { cursor: pointer; }
+    .table-container {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      overflow-x: auto;
+      background: var(--surface);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.875rem;
+    }
+    th {
+      background: var(--surface-subtle);
+      color: var(--text-secondary);
+      font-family: var(--font-display);
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    td {
+      padding: 13px 16px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-main);
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #f8fafc; cursor: pointer; }
+    tr.selected td {
+      background: var(--primary-light);
+    }
+    tr.selected td:first-child {
+      border-left: 3px solid var(--primary);
+    }
+
+    .badge-category {
+      display: inline-block;
+      padding: 3px 9px;
+      border-radius: var(--radius-pill);
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+    .cat-res { background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
+    .cat-com { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
+    .cat-ind { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+
+    /* ================= TARIFF REFERENCE BOX ================= */
+    .tariff-box {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 18px;
+      margin-top: 18px;
+    }
+    .tariff-box-title {
+      font-family: var(--font-display);
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--brand-navy);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .tariff-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.82rem;
+      padding: 6px 0;
+      border-bottom: 1px dashed var(--border);
+      color: var(--text-secondary);
+    }
+    .tariff-item:last-child { border-bottom: none; }
+    .tariff-rates {
+      font-family: var(--font-mono);
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    /* ================= INVOICE VIEWER ================= */
+    .invoice-card {
+      font-family: var(--font-mono);
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 24px;
+      white-space: pre-wrap;
+      font-size: 0.85rem;
+      line-height: 1.6;
+      color: #1e293b;
+      min-height: 480px;
+      max-height: 540px;
+      overflow-y: auto;
+      box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.02);
+    }
+
+    /* ================= FOOTER ================= */
+    footer {
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      padding: 24px 32px;
+      margin-top: auto;
+    }
+    .footer-inner {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      flex-wrap: wrap;
+      gap: 14px;
+    }
+
+    /* ================= TOAST ================= */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      padding: 12px 20px;
+      border-radius: var(--radius-md);
+      background: var(--brand-navy);
+      color: #ffffff;
+      font-family: var(--font-display);
+      font-size: 0.86rem;
+      font-weight: 500;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+      display: none;
+      z-index: 1000;
+      animation: popIn 0.2s ease;
+    }
+    @keyframes popIn {
+      from { transform: translateY(10px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ================= TOP NAVIGATION ================= -->
+  <header>
+    <div class="header-container">
+      <div class="brand-wrap" onclick="switchTab('customers')">
+        <img src="images/logo.png" alt="SmartGrid Electric Meter Logo" class="brand-logo-img">
+        <div class="brand-text">
+          <span class="brand-title">SmartGrid</span>
+          <span class="brand-subtitle">Electricity Billing &amp; Consumer Portal</span>
+        </div>
+      </div>
+
+      <nav class="nav-tabs">
+        <button class="tab-btn active" onclick="switchTab('customers')">Consumers</button>
+        <button class="tab-btn" onclick="switchTab('billing')">Generate Bill</button>
+        <button class="tab-btn" onclick="switchTab('invoices')">Invoices</button>
+      </nav>
+
+      <div class="header-actions">
+        <div class="header-date-badge" id="currentDateBadge">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+          <span id="dateDisplay">Today</span>
+        </div>
+        <button class="btn-quick-bill" onclick="switchTab('billing')">
+          + New Bill
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ================= PORTAL BANNER ================= -->
+  <div class="portal-banner">
+    <div class="portal-banner-inner">
+      <div class="portal-heading">
+        <h1>Electricity Billing &amp; Metering System</h1>
+        <p>Consumer directory, slab tariff calculations, and instant monthly billing management.</p>
+      </div>
+
+      <div class="stat-group">
+        <div class="stat-card">
+          <div class="stat-card-label">Total Consumers</div>
+          <div class="stat-card-val" id="statCustomers">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-label">Invoices Issued</div>
+          <div class="stat-card-val" id="statBills">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-label">Total Billed (₹)</div>
+          <div class="stat-card-val" id="statRevenue">₹0.00</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= MAIN CONTENT ================= -->
+  <main>
+    <!-- TAB 1: CONSUMERS -->
+    <div id="tab-customers" class="tab-content active">
+      <div class="grid-layout">
+        <!-- Consumer Form -->
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Consumer Registration</h2>
+            <span class="card-badge" id="formBadge">New Consumer</span>
+          </div>
+          <form id="custForm" onsubmit="event.preventDefault(); saveCustomer();">
+            <div class="form-group">
+              <label class="form-label">Consumer ID</label>
+              <input type="text" id="custId" class="form-control" readonly placeholder="Auto-generated">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Consumer Full Name</label>
+              <input type="text" id="custName" class="form-control" required placeholder="e.g. Ramesh Kumar">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Service Premise Address</label>
+              <input type="text" id="custAddress" class="form-control" required placeholder="e.g. 402 Green Avenue, Sector 14">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Contact Mobile (10 Digits)</label>
+              <input type="tel" id="custPhone" class="form-control" required pattern="\d{10}" placeholder="e.g. 9876543210">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Tariff Connection Category</label>
+              <select id="custCategory" class="form-control">
+                <option value="Residential">Residential (Domestic)</option>
+                <option value="Commercial">Commercial (Office / Shop)</option>
+                <option value="Industrial">Industrial (Manufacturing)</option>
+              </select>
+            </div>
+            <div class="btn-row">
+              <button type="submit" class="btn btn-primary" id="btnSaveCust">Save Consumer</button>
+              <button type="button" class="btn btn-danger" id="btnDelCust" onclick="deleteCustomer()" style="display:none;">Delete</button>
+              <button type="button" class="btn btn-secondary" onclick="clearCustForm()">Clear</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Consumer Directory Table -->
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Consumer Accounts</h2>
+            <span class="card-badge" id="custCount">0 Accounts</span>
+          </div>
+          <div class="search-box">
+            <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+            <input type="text" id="custSearch" class="form-control search-input" placeholder="Search by name, ID, phone..." oninput="renderCustomers()">
+          </div>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Consumer Name</th>
+                  <th>Phone</th>
+                  <th>Address</th>
+                  <th>Category</th>
+                </tr>
+              </thead>
+              <tbody id="custTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: GENERATE BILL -->
+    <div id="tab-billing" class="tab-content">
+      <div class="grid-layout">
+        <!-- Billing Form -->
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Calculate Monthly Bill</h2>
+            <span class="card-badge" id="unitsBadge">0 Units Consumed</span>
+          </div>
+          <form id="billForm" onsubmit="event.preventDefault(); saveBill();">
+            <div class="form-group">
+              <label class="form-label">Select Consumer Account</label>
+              <select id="billCustSelect" class="form-control" onchange="autoFillPrev()" required></select>
+            </div>
+
+            <div class="form-row-2">
+              <div class="form-group">
+                <label class="form-label">Billing Month</label>
+                <select id="billMonth" class="form-control">
+                  <option>January</option><option>February</option><option>March</option>
+                  <option>April</option><option>May</option><option>June</option>
+                  <option>July</option><option>August</option><option>September</option>
+                  <option>October</option><option>November</option><option>December</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Billing Year</label>
+                <input type="number" id="billYear" class="form-control" value="2026" min="2000" max="2100">
+              </div>
+            </div>
+
+            <div class="form-row-2">
+              <div class="form-group">
+                <label class="form-label">Previous Meter Reading</label>
+                <input type="number" id="billPrev" class="form-control" min="0" required placeholder="0" oninput="previewBill()">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Current Meter Reading</label>
+                <input type="number" id="billCurr" class="form-control" min="0" required placeholder="0" oninput="previewBill()">
+              </div>
+            </div>
+
+            <div class="btn-row">
+              <button type="button" class="btn btn-secondary" onclick="previewBill()">Preview Calculation</button>
+              <button type="submit" class="btn btn-primary">Generate &amp; Save Bill</button>
+            </div>
+          </form>
+
+          <!-- Tariff Reference Box -->
+          <div class="tariff-box">
+            <div class="tariff-box-title">Tariff Slab Rates (per unit)</div>
+            <div class="tariff-item">
+              <span>Residential (0-100 / 101-300 / 300+)</span>
+              <span class="tariff-rates">₹4.50 / ₹7.00 / ₹10.00 (Fixed ₹50)</span>
+            </div>
+            <div class="tariff-item">
+              <span>Commercial (0-100 / 101-300 / 300+)</span>
+              <span class="tariff-rates">₹8.00 / ₹10.00 / ₹12.00 (Fixed ₹150)</span>
+            </div>
+            <div class="tariff-item">
+              <span>Industrial (0-100 / 101-300 / 300+)</span>
+              <span class="tariff-rates">₹9.00 / ₹11.00 / ₹14.00 (Fixed ₹300)</span>
+            </div>
+            <div class="tariff-item">
+              <span>Electricity Duty (Tax)</span>
+              <span class="tariff-rates">5% on (Energy + Fixed)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Preview Panel -->
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Live Invoice Preview</h2>
+            <span class="card-badge">Computed on Java Core</span>
+          </div>
+          <div id="billPreviewArea" class="invoice-card">Select a consumer and enter meter readings to preview bill...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: INVOICES -->
+    <div id="tab-invoices" class="tab-content">
+      <div class="grid-layout">
+        <!-- Invoices List -->
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Generated Invoices</h2>
+            <span class="card-badge" id="billCount">0 Invoices</span>
+          </div>
+          <div class="search-box">
+            <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+            <input type="text" id="billSearch" class="form-control search-input" placeholder="Search invoice, consumer, period..." oninput="renderBills()">
+          </div>
+          <div class="filter-row">
+            <select id="billCustFilter" class="form-control" onchange="renderBills()"><option value="">All consumers</option></select>
+            <select id="billYearFilter" class="form-control" onchange="renderBills()"><option value="">All years</option></select>
+          </div>
+          <div class="bill-summary" id="billSummary"></div>
+          <details class="year-summary">
+            <summary>Year-wise summary</summary>
+            <div class="table-container">
+              <table>
+                <thead><tr><th>Year</th><th>Invoices</th><th>Units</th><th>Amount</th></tr></thead>
+                <tbody id="yearSummaryBody"></tbody>
+              </table>
+            </div>
+          </details>
+          <details class="year-summary" open>
+            <summary>Consumer tracking &mdash; kWh per year (click a consumer to filter)</summary>
+            <div class="table-container">
+              <table class="track-table">
+                <thead id="trackHead"></thead>
+                <tbody id="trackBody"></tbody>
+              </table>
+            </div>
+          </details>
+          <div class="table-container table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th>Invoice</th>
+                  <th>Consumer</th>
+                  <th>Period</th>
+                  <th>Units</th>
+                  <th>Total</th>
+                </tr>
+              </thead>
+              <tbody id="billTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Invoice Detail View -->
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Invoice Inspector</h2>
+            <div style="display: flex; gap: 8px;">
+              <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.78rem;" onclick="printInvoice()">Print</button>
+              <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.78rem;" onclick="saveInvoiceTxt()">Export .TXT</button>
+              <button class="btn btn-danger" style="padding: 6px 12px; font-size: 0.78rem;" onclick="deleteSelectedBill()">Delete</button>
+            </div>
+          </div>
+          <div id="invoiceViewArea" class="invoice-card">Select an invoice from the table to inspect details.</div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- ================= FOOTER ================= -->
+  <footer>
+    <div class="footer-inner">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <img src="images/logo.png" alt="Logo" style="width: 24px; height: 24px; object-fit: contain;">
+        <span>State Power &amp; Electricity Distribution Company &bull; Object-Oriented Software Architecture</span>
+      </div>
+      <div>Designed for clean readability &amp; reliable operations</div>
+    </div>
+  </footer>
+
+  <div id="toast" class="toast"></div>
+
+  <!-- ================= JAVASCRIPT ================= -->
+  <script>
+    let customers = [];
+    let bills = [];
+    let lastSnapshot = '';   // used so the 3-second sync only re-renders when data really changed
+    let selectedCustomerId = null;
+    let selectedInvoiceNo = null;
+
+    // Display formatted current date in header
+    const today = new Date();
+    const options = { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' };
+    const dateFormatted = today.toLocaleDateString('en-US', options);
+    const dateDisplay = document.getElementById('dateDisplay');
+    if (dateDisplay) dateDisplay.textContent = dateFormatted;
+
+    function showToast(msg, isError = false) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.style.backgroundColor = isError ? 'var(--danger)' : 'var(--brand-navy)';
+      t.style.display = 'block';
+      setTimeout(() => { t.style.display = 'none'; }, 3000);
+    }
+
+    function switchTab(name) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      const btn = Array.from(document.querySelectorAll('.tab-btn')).find(b => b.textContent.toLowerCase().includes(name));
+      if (btn) btn.classList.add('active');
+      const content = document.getElementById('tab-' + name);
+      if (content) content.classList.add('active');
+      if (name === 'billing') autoFillPrev();
+    }
+
+    async function loadData() {
+      try {
+        const [cRes, bRes] = await Promise.all([
+          fetch('/api/customers'),
+          fetch('/api/bills')
+        ]);
+        const newCustomers = await cRes.json();
+        const newBills = await bRes.json();
+        const snapshot = JSON.stringify([newCustomers, newBills]);
+        if (snapshot === lastSnapshot) return;   // nothing changed: keep dropdowns/forms untouched
+        lastSnapshot = snapshot;
+        customers = newCustomers;
+        bills = newBills;
+        renderCustomers();
+        renderCustomerSelect();
+        renderBillFilters();
+        renderBills();
+        renderTracking();
+        updateStats();
+      } catch (e) {
+        console.error('Error fetching data from server:', e);
+      }
+    }
+
+    function updateStats() {
+      document.getElementById('statCustomers').textContent = customers.length;
+      document.getElementById('statBills').textContent = bills.length;
+      const totalRev = bills.reduce((acc, b) => acc + (parseFloat(b.total) || 0), 0);
+      document.getElementById('statRevenue').textContent = '₹' + totalRev.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function renderCustomers() {
+      const q = document.getElementById('custSearch').value.toLowerCase().trim();
+      const tbody = document.getElementById('custTableBody');
+      tbody.innerHTML = '';
+      const filtered = customers.filter(c => 
+        !q || c.id.toLowerCase().includes(q) || c.name.toLowerCase().includes(q) || c.phone.includes(q)
+      );
+      document.getElementById('custCount').textContent = `${filtered.length} Accounts`;
+      filtered.forEach(c => {
+        const tr = document.createElement('tr');
+        if (selectedCustomerId === c.id) tr.classList.add('selected');
+        let catClass = 'cat-res';
+        if (c.category === 'Commercial') catClass = 'cat-com';
+        if (c.category === 'Industrial') catClass = 'cat-ind';
+        tr.innerHTML = `
+          <td><strong>${c.id}</strong></td>
+          <td>${c.name}</td>
+          <td>${c.phone}</td>
+          <td>${c.address}</td>
+          <td><span class="badge-category ${catClass}">${c.category}</span></td>
+        `;
+        tr.onclick = () => selectCustomer(c);
+        tbody.appendChild(tr);
+      });
+    }
+
+    function selectCustomer(c) {
+      selectedCustomerId = c.id;
+      document.getElementById('custId').value = c.id;
+      document.getElementById('custName').value = c.name;
+      document.getElementById('custAddress').value = c.address;
+      document.getElementById('custPhone').value = c.phone;
+      document.getElementById('custCategory').value = c.category;
+      document.getElementById('btnSaveCust').textContent = 'Update Consumer';
+      document.getElementById('formBadge').textContent = 'Editing ' + c.id;
+      document.getElementById('btnDelCust').style.display = 'inline-flex';
+      renderCustomers();
+    }
+
+    function clearCustForm() {
+      selectedCustomerId = null;
+      document.getElementById('custForm').reset();
+      document.getElementById('custId').value = '';
+      document.getElementById('btnSaveCust').textContent = 'Save Consumer';
+      document.getElementById('formBadge').textContent = 'New Consumer';
+      document.getElementById('btnDelCust').style.display = 'none';
+      renderCustomers();
+    }
+
+    async function saveCustomer() {
+      const body = {
+        name: document.getElementById('custName').value,
+        address: document.getElementById('custAddress').value,
+        phone: document.getElementById('custPhone').value,
+        category: document.getElementById('custCategory').value
+      };
+      try {
+        const url = selectedCustomerId ? `/api/customers/${selectedCustomerId}` : '/api/customers';
+        const method = selectedCustomerId ? 'PUT' : 'POST';
+        const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+        const data = await res.json();
+        if (data.error) throw new Error(data.error);
+        showToast(selectedCustomerId ? 'Consumer updated successfully.' : 'Consumer registered successfully.');
+        clearCustForm();
+        await loadData();
+      } catch (err) {
+        showToast(err.message, true);
+      }
+    }
+
+    async function deleteCustomer() {
+      if (!selectedCustomerId) return;
+      if (!confirm('Are you sure you want to delete consumer ' + selectedCustomerId + '?')) return;
+      try {
+        const res = await fetch(`/api/customers/${selectedCustomerId}`, { method: 'DELETE' });
+        const data = await res.json();
+        if (data.error) throw new Error(data.error);
+        showToast('Consumer deleted.');
+        clearCustForm();
+        await loadData();
+      } catch (err) {
+        showToast(err.message, true);
+      }
+    }
+
+    function renderCustomerSelect() {
+      const sel = document.getElementById('billCustSelect');
+      sel.innerHTML = '<option value="">-- Choose Consumer Account --</option>';
+      customers.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c.id;
+        opt.textContent = `${c.id} - ${c.name} (${c.category})`;
+        sel.appendChild(opt);
+      });
+      const now = new Date();
+      document.getElementById('billMonth').selectedIndex = now.getMonth();
+      document.getElementById('billYear').value = now.getFullYear();
+    }
+
+    function autoFillPrev() {
+      const custId = document.getElementById('billCustSelect').value;
+      if (!custId) { document.getElementById('billPrev').value = ''; return; }
+      let lastCurr = 0, lastKey = -1;
+      for (const b of bills) {
+        if (b.customerId !== custId) continue;
+        const key = periodKey(b);
+        if (key > lastKey) { lastKey = key; lastCurr = b.curr; }
+      }
+      document.getElementById('billPrev').value = lastCurr;
+      previewBill();
+    }
+
+    async function previewBill() {
+      const custId = document.getElementById('billCustSelect').value;
+      const prev = document.getElementById('billPrev').value;
+      const curr = document.getElementById('billCurr').value;
+      const month = document.getElementById('billMonth').value;
+      const year = document.getElementById('billYear').value;
+
+      if (!custId || prev === '' || curr === '') {
+        document.getElementById('unitsBadge').textContent = '0 Units Consumed';
+        return;
+      }
+      const units = parseInt(curr) - parseInt(prev);
+      document.getElementById('unitsBadge').textContent = units >= 0 ? `${units} Units Consumed` : 'Invalid Reading';
+
+      if (parseInt(curr) < parseInt(prev)) {
+        document.getElementById('billPreviewArea').textContent = 'Validation Notice: Current reading cannot be less than previous meter reading (' + prev + ').';
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/bills/preview', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ customerId: custId, prev, curr, month, year })
+        });
+        const b = await res.json();
+        if (!b.error) {
+          const cust = customers.find(c => c.id === b.customerId);
+          document.getElementById('billPreviewArea').textContent = formatInvoiceText(b, cust);
+        }
+      } catch (e) { }
+    }
+
+    async function saveBill() {
+      const custId = document.getElementById('billCustSelect').value;
+      const prev = document.getElementById('billPrev').value;
+      const curr = document.getElementById('billCurr').value;
+      const month = document.getElementById('billMonth').value;
+      const year = document.getElementById('billYear').value;
+
+      try {
+        const res = await fetch('/api/bills', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ customerId: custId, prev, curr, month, year })
+        });
+        const data = await res.json();
+        if (data.error) throw new Error(data.error);
+        showToast(`Invoice ${data.invoiceNo} successfully generated!`);
+        document.getElementById('billCurr').value = '';
+        await loadData();
+        switchTab('invoices');
+        selectInvoice(data.invoiceNo);
+      } catch (err) {
+        showToast(err.message, true);
+      }
+    }
+
+    const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    function periodKey(b) { return Number(b.year) * 12 + MONTH_NAMES.indexOf(b.month); }
+    const inr = n => '₹' + Number(n).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+    function renderBillFilters() {
+      const custSel = document.getElementById('billCustFilter');
+      const yearSel = document.getElementById('billYearFilter');
+      const keepCust = custSel.value, keepYear = yearSel.value;
+      custSel.innerHTML = '<option value="">All consumers</option>';
+      customers.forEach(c => {
+        const o = document.createElement('option');
+        o.value = c.id; o.textContent = `${c.id} - ${c.name}`;
+        custSel.appendChild(o);
+      });
+      const years = [...new Set(bills.map(b => Number(b.year)))].sort((a, b) => b - a);
+      yearSel.innerHTML = '<option value="">All years</option>';
+      years.forEach(y => {
+        const o = document.createElement('option');
+        o.value = y; o.textContent = y;
+        yearSel.appendChild(o);
+      });
+      custSel.value = keepCust; yearSel.value = keepYear;
+    }
+
+    function renderBills() {
+      const q = document.getElementById('billSearch').value.toLowerCase().trim();
+      const custF = document.getElementById('billCustFilter').value;
+      const yearF = document.getElementById('billYearFilter').value;
+      const tbody = document.getElementById('billTableBody');
+      tbody.innerHTML = '';
+      const filtered = bills.filter(b => {
+        const cust = customers.find(c => c.id === b.customerId);
+        const cname = cust ? cust.name.toLowerCase() : '';
+        const matchesText = !q || b.invoiceNo.toLowerCase().includes(q) || b.customerId.toLowerCase().includes(q) || cname.includes(q);
+        const matchesCust = !custF || b.customerId === custF;
+        const matchesYear = !yearF || String(b.year) === yearF;
+        return matchesText && matchesCust && matchesYear;
+      }).sort((a, b) => periodKey(b) - periodKey(a) || a.customerId.localeCompare(b.customerId));
+
+      document.getElementById('billCount').textContent = `${filtered.length} Invoices`;
+      const totUnits = filtered.reduce((a, b) => a + Number(b.units), 0);
+      const totAmt = filtered.reduce((a, b) => a + Number(b.total), 0);
+      document.getElementById('billSummary').textContent =
+        `Showing ${filtered.length} invoices · ${totUnits.toLocaleString('en-IN')} kWh · ${inr(totAmt)}`;
+
+      filtered.forEach(b => {
+        const cust = customers.find(c => c.id === b.customerId);
+        const tr = document.createElement('tr');
+        if (selectedInvoiceNo === b.invoiceNo) tr.classList.add('selected');
+        tr.innerHTML = `
+          <td><strong>${b.invoiceNo}</strong></td>
+          <td>${cust ? cust.name : b.customerId}</td>
+          <td>${b.month} ${b.year}</td>
+          <td>${b.units} kWh</td>
+          <td style="font-weight:600; color:var(--primary); font-family:var(--font-mono);">${inr(b.total)}</td>
+        `;
+        tr.onclick = () => selectInvoice(b.invoiceNo);
+        tbody.appendChild(tr);
+      });
+      renderYearSummary(custF);
+    }
+
+    function renderTracking() {
+      const years = [...new Set(bills.map(b => Number(b.year)))].sort((a, b) => a - b);
+      document.getElementById('trackHead').innerHTML =
+        '<tr><th>Consumer</th>' + years.map(y => `<th>${y}</th>`).join('') + '<th>Total billed</th></tr>';
+      const units = {}, amt = {};
+      bills.forEach(b => {
+        units[b.customerId + '|' + b.year] = (units[b.customerId + '|' + b.year] || 0) + Number(b.units);
+        amt[b.customerId] = (amt[b.customerId] || 0) + Number(b.total);
+      });
+      const body = document.getElementById('trackBody');
+      body.innerHTML = '';
+      [...customers].sort((a, b) => a.id.localeCompare(b.id)).forEach(c => {
+        const rowMax = Math.max(1, ...years.map(y => units[c.id + '|' + y] || 0));
+        const cells = years.map(y => {
+          const u = units[c.id + '|' + y];
+          if (!u) return '<td style="color:var(--text-muted)">&ndash;</td>';
+          return `<td style="background:rgba(29,78,216,${(0.06 + 0.3 * u / rowMax).toFixed(2)})">${u.toLocaleString('en-IN')}</td>`;
+        }).join('');
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td><strong>${c.name}</strong><br><span style="font-size:0.7rem;color:var(--text-muted)">${c.id} · ${c.category}</span></td>` +
+                       cells + `<td style="font-family:var(--font-mono);font-weight:600">${inr(amt[c.id] || 0)}</td>`;
+        tr.onclick = () => { document.getElementById('billCustFilter').value = c.id; renderBills(); };
+        body.appendChild(tr);
+      });
+    }
+
+    function renderYearSummary(custF) {
+      const byYear = {};
+      bills.filter(b => !custF || b.customerId === custF).forEach(b => {
+        const y = byYear[b.year] || (byYear[b.year] = { n: 0, units: 0, amt: 0 });
+        y.n++; y.units += Number(b.units); y.amt += Number(b.total);
+      });
+      const tbody = document.getElementById('yearSummaryBody');
+      tbody.innerHTML = '';
+      Object.keys(byYear).sort((a, b) => b - a).forEach(y => {
+        const r = byYear[y];
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td><strong>${y}</strong></td><td>${r.n}</td><td>${r.units.toLocaleString('en-IN')} kWh</td>` +
+                       `<td style="font-family:var(--font-mono);">${inr(r.amt)}</td>`;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function selectInvoice(invNo) {
+      selectedInvoiceNo = invNo;
+      renderBills();
+      const b = bills.find(x => x.invoiceNo === invNo);
+      if (!b) return;
+      const cust = customers.find(c => c.id === b.customerId);
+      document.getElementById('invoiceViewArea').textContent = formatInvoiceText(b, cust);
+    }
+
+    function formatInvoiceText(b, c) {
+      const line = "==========================================================\n";
+      const thin = "----------------------------------------------------------\n";
+      let s = line +
+        "              ELECTRICITY BILL / INVOICE\n" +
+        "           State Power Distribution Company\n" +
+        line +
+        `Invoice No : ${b.invoiceNo}\n` +
+        `Date       : ${b.date}\n` +
+        `Period     : ${b.month} ${b.year}\n` + thin;
+      if (c) {
+        s += `Customer ID: ${c.id}\n` +
+             `Name       : ${c.name}\n` +
+             `Address    : ${c.address}\n` +
+             `Phone      : ${c.phone}\n` +
+             `Category   : ${c.category}\n` + thin;
+      }
+      s += `Previous reading : ${String(b.prev).padStart(8)}\n` +
+           `Current reading  : ${String(b.curr).padStart(8)}\n` +
+           `Units consumed   : ${String(b.units).padStart(8)} kWh\n` + thin +
+           `Energy charges (slab)           ${Number(b.energy).toFixed(2).padStart(15)}\n` +
+           `Fixed charges                   ${Number(b.fixed).toFixed(2).padStart(15)}\n` +
+           `Electricity duty (5%)           ${Number(b.tax).toFixed(2).padStart(15)}\n` + thin +
+           `TOTAL AMOUNT PAYABLE (Rs.)      ${Number(b.total).toFixed(2).padStart(15)}\n` + line +
+           "Please pay within 15 days of the invoice date.\nThank you for conserving electricity!\n";
+      return s;
+    }
+
+    async function deleteSelectedBill() {
+      if (!selectedInvoiceNo) { showToast('Select an invoice first.', true); return; }
+      if (!confirm(`Delete invoice ${selectedInvoiceNo}?`)) return;
+      try {
+        const res = await fetch(`/api/bills/${selectedInvoiceNo}`, { method: 'DELETE' });
+        const data = await res.json();
+        if (data.error) throw new Error(data.error);
+        showToast('Invoice deleted.');
+        selectedInvoiceNo = null;
+        document.getElementById('invoiceViewArea').textContent = 'Select an invoice from the table to inspect details.';
+        await loadData();
+      } catch (err) {
+        showToast(err.message, true);
+      }
+    }
+
+    function printInvoice() {
+      const text = document.getElementById('invoiceViewArea').textContent;
+      if (!text || text.includes('Select an invoice')) { showToast('Select an invoice to print.', true); return; }
+      const w = window.open('', '_blank');
+      w.document.write(`<pre style="font-family:monospace; padding:30px; font-size:14px; background:#ffffff; color:#000000; line-height:1.6;">${text}</pre>`);
+      w.document.close();
+      w.print();
+    }
+
+    function saveInvoiceTxt() {
+      const text = document.getElementById('invoiceViewArea').textContent;
+      if (!text || text.includes('Select an invoice')) { showToast('Select an invoice first.', true); return; }
+      const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = (selectedInvoiceNo || 'invoice') + '.txt';
+      a.click();
+    }
+
+    // Initial load & automatic sync with Java backend
+    loadData();
+    setInterval(loadData, 3000);
+  </script>
+</body>
+</html>
